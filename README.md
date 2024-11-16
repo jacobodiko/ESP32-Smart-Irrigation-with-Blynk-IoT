@@ -151,16 +151,4 @@ W: 10.5L   R
 
 This project is open-source and available under the [MIT License](LICENSE).
 
-## Contributions
-
-Contributions to this project are welcome. Feel free to open issues or submit pull requests on the [GitHub repository](https://github.com/your-repo-link).
-
----
-
-## Contact
-
-For any inquiries or contributions, feel free to reach out:
-
-- **Email**: your-email@example.com
-- **GitHub**: [Your GitHub Profile](https://github.com/your-profile)
 
