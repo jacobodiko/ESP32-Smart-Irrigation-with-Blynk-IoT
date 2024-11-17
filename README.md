@@ -24,21 +24,22 @@ This project is a comprehensive **solar energy tracking** and **environmental mo
 - **16x2 I2C LCD Display**
 - **Connecting Wires**
 - **Power Supply** (for ESP32 and other components)
-  
+
 ## Pin Configuration
 
-| Component         | Pin Assignment    |
-|-------------------|-------------------|
-| DHT11 Sensor      | GPIO 4            |
-| LDR1 (Solar)      | GPIO 34           |
-| LDR2 (Solar)      | GPIO 35           |
-| Servo Motor       | GPIO 13           |
-| LCD SDA           | GPIO 21           |
-| LCD SCL           | GPIO 22           |
-| Water Flow Sensor | GPIO 23           |
-| Rain Sensor       | GPIO 19           |
-| Voltage Sensor    | GPIO 33           |
-| Current Sensor    | GPIO 32           |
+| Component         | Pin Assignment (NodeMCU ESP32 V1.1 with P Naming) |
+|-------------------|---------------------------------------------------|
+| DHT11 Sensor      | P5    (GPIO 4)                                      |
+| LDR1 (Solar)      | P27    (GPIO 34)                                    |
+| LDR2 (Solar)      | P32    (GPIO 35)                                    |
+| Servo Motor       | P13    (GPIO 13)                                    |
+| LCD SDA           | P18    (GPIO 21)                                    |
+| LCD SCL           | P19    (GPIO 22)                                    |
+| Water Flow Sensor | P21    (GPIO 23)                                    |
+| Rain Sensor       | P17    (GPIO 19)                                    |
+| Voltage Sensor    | P27    (GPIO 34)                                    |
+| Current Sensor    | P25    (GPIO 32)                                    |
+
 
 ## Software Requirements
 
