@@ -1,155 +1,129 @@
-# ESP32 Solar Tracking, Irrigation and Environmental Monitoring System
-This project is a comprehensive **solar energy tracking** and **environmental monitoring system** built using an **ESP32 microcontroller**. The system integrates multiple sensors to monitor environmental parameters such as temperature, humidity, rain detection, water flow, voltage, and current, while also optimizing solar panel alignment using **light-dependent resistors (LDRs)** and a **servo motor**. It displays real-time data on an **LCD screen** and logs critical values for solar panel optimization and resource management.
+# ESP32 Solar Tracking, Irrigation, and Environmental Monitoring System
+
+This project is a comprehensive **solar tracking**, **environmental monitoring**, and **irrigation management system** built using an **ESP32 microcontroller**. It integrates various sensors to monitor key environmental parameters such as temperature, humidity, rain, water flow, voltage, and current. The system also automatically optimizes solar panel alignment using **Light Dependent Resistors (LDRs)** and a **servo motor**, ensuring efficient energy capture. Real-time data is displayed on a **16x2 LCD screen**, providing critical insights for solar panel optimization and resource management.
 
 ## Features
 
-- **Solar Tracking**: Automatically adjusts the position of a solar panel to maximize energy capture using a servo motor and two LDRs.
-- **Temperature & Humidity Monitoring**: Continuously measures the environmental temperature and humidity using a DHT11 sensor.
-- **Rain Detection**: Detects rain using a rain sensor and adjusts the system behavior accordingly.
-- **Water Flow Measurement**: Tracks water usage in real-time using a flow sensor.
-- **Voltage & Current Sensing**: Measures voltage and current from connected circuits using a voltage sensor and an ACS712 current sensor.
-- **LCD Display**: Real-time display of all sensor data on a 16x2 LCD screen via I2C.
-- **Water Usage Tracking**: Tracks cumulative water usage over time.
-  
+- **Solar Tracking**: Dynamically adjusts the solar panel’s position using two LDRs and a servo motor to maximize sunlight exposure.
+- **Temperature and Humidity Monitoring**: Measures ambient temperature and humidity levels using a DHT11 sensor.
+- **Rain Detection**: Detects rainfall using a rain sensor and adjusts system behavior (e.g., irrigation) accordingly.
+- **Water Flow Monitoring**: Tracks water usage in real-time with a water flow sensor, allowing for precise water management.
+- **Voltage and Current Measurement**: Continuously monitors the voltage and current from connected circuits using voltage and ACS712 current sensors.
+- **LCD Display**: Displays real-time sensor data on a 16x2 I2C LCD, including environmental conditions, power statistics, and water usage.
+- **Cumulative Water Usage Tracking**: Logs total water usage over time in liters.
+
 ## Hardware Requirements
 
 - **ESP32 Development Board**
 - **DHT11 Temperature and Humidity Sensor**
-- **LDRs (2x Light Dependent Resistors)**
-- **Servo Motor** (for solar tracking)
+- **2x Light Dependent Resistors (LDRs)**
+- **Servo Motor** (for solar panel tracking)
 - **Water Flow Sensor**
 - **Rain Sensor**
-- **Voltage Sensor** (Analog input)
+- **Voltage Sensor**
 - **ACS712 Current Sensor**
 - **16x2 I2C LCD Display**
 - **Connecting Wires**
-- **Power Supply** (for ESP32 and other components)
+- **Power Supply** (for ESP32 and peripherals)
 
 ## Pin Configuration
 
-| Component         | Pin Assignment (NodeMCU ESP32 V1.1 with P Naming) |
-|-------------------|---------------------------------------------------|
-| DHT11 Sensor      | P5    (GPIO 4)                                      |
-| LDR1 (Solar)      | P27    (GPIO 34)                                    |
-| LDR2 (Solar)      | P32    (GPIO 35)                                    |
-| Servo Motor       | P13    (GPIO 13)                                    |
-| LCD SDA           | P18    (GPIO 21)                                    |
-| LCD SCL           | P19    (GPIO 22)                                    |
-| Water Flow Sensor | P21    (GPIO 23)                                    |
-| Rain Sensor       | P17    (GPIO 19)                                    |
-| Voltage Sensor    | P27    (GPIO 34)                                    |
-| Current Sensor    | P25    (GPIO 32)                                    |
-
+| Component         | Pin Assignment (ESP32)           |
+|-------------------|-----------------------------------|
+| DHT11 Sensor      | GPIO 4                            |
+| LDR1 (Solar)      | GPIO 34                           |
+| LDR2 (Solar)      | GPIO 35                           |
+| Servo Motor       | GPIO 13                           |
+| LCD SDA           | GPIO 21                           |
+| LCD SCL           | GPIO 22                           |
+| Water Flow Sensor | GPIO 23                           |
+| Rain Sensor       | GPIO 19                           |
+| Voltage Sensor    | GPIO 33                           |
+| Current Sensor    | GPIO 32                           |
 
 ## Software Requirements
 
 - **Arduino IDE** with ESP32 core
-- **ESP32Servo Library**: For controlling the servo motor.
-- **DHT Library**: For handling DHT11 temperature and humidity sensor.
-- **Wire Library**: For I2C communication with the LCD.
+- **ESP32Servo Library** (for servo motor control)
+- **DHT Library** (for temperature and humidity readings)
+- **Wire Library** (for I2C communication with the LCD)
 
 ## Installation and Setup
 
-1. **Install Arduino IDE**: If you don’t have it installed, download the Arduino IDE from [here](https://www.arduino.cc/en/software).
+1. **Install Arduino IDE**: If not already installed, download and set up the Arduino IDE from [here](https://www.arduino.cc/en/software).
    
-2. **Set Up ESP32 in Arduino IDE**:
-   - Open Arduino IDE and go to **File > Preferences**.
-   - In the “Additional Boards Manager URLs” field, add the following URL:
+2. **Configure ESP32 in Arduino IDE**:
+   - Go to **File > Preferences**.
+   - Add the following URL in the “Additional Boards Manager URLs” field:
      ```
      https://dl.espressif.com/dl/package_esp32_index.json
      ```
-   - Go to **Tools > Board > Board Manager**, search for "ESP32" and install the **ESP32 by Espressif Systems** package.
+   - Go to **Tools > Board > Boards Manager**, search for "ESP32" and install the **ESP32 by Espressif Systems** package.
    
 3. **Install Required Libraries**:
-   - Install the following libraries from **Sketch > Include Library > Manage Libraries**:
+   - Navigate to **Sketch > Include Library > Manage Libraries** and install:
      - **ESP32Servo**
-     - **DHT sensor library**
+     - **DHT Sensor Library**
      - **LiquidCrystal_I2C**
 
-4. **Connect Components**:
-   - Connect all sensors, servo motor, and the LCD display to the ESP32 as per the pin configuration above.
-   
+4. **Wiring**:
+   - Connect sensors, the servo motor, and the LCD display to the ESP32 as outlined in the pin configuration table.
+
 5. **Upload the Code**:
-   - Open the `main.ino` file in Arduino IDE.
-   - Select the correct ESP32 board and the appropriate port under **Tools**.
-   - Upload the code to the ESP32 by clicking the **Upload** button.
+   - Open the `main.ino` file in the Arduino IDE.
+   - Select the correct ESP32 board under **Tools > Board**.
+   - Upload the code by clicking the **Upload** button.
 
 ## How It Works
 
 ### Solar Tracking
-The system uses two LDRs to monitor light intensity on either side of the solar panel. Based on the light levels, the servo motor adjusts the solar panel's angle for optimal exposure to sunlight. The `handleSolarTracking()` function compares the LDR values and moves the servo motor in small increments to align the panel.
+The system uses two LDRs to detect light intensity on either side of the solar panel. The `handleSolarTracking()` function compares the light levels and moves the servo motor to adjust the solar panel’s position for optimal sunlight exposure. The servo will shift left or right depending on which LDR detects more light.
 
 ### Environmental Monitoring
-- **Temperature and Humidity**: The DHT11 sensor provides temperature and humidity data. These values are displayed on the LCD.
-- **Rain Detection**: The rain sensor outputs a digital signal that is processed to determine whether rain is detected. If rain is detected, an "R" is displayed on the LCD.
-- **Voltage and Current Measurement**: The voltage and current sensors provide real-time readings, which are displayed on the LCD. The ACS712 current sensor outputs current in Amps, and the voltage sensor outputs values in Volts.
-  
+
+- **Temperature and Humidity**: The DHT11 sensor provides real-time temperature and humidity readings, which are displayed on the LCD.
+- **Rain Detection**: The rain sensor gives a digital output; if rain is detected, the system can modify its behavior (e.g., irrigation control). An "R" is displayed on the LCD when rain is detected.
+- **Voltage and Current Measurement**: The system uses the voltage sensor and ACS712 current sensor to measure electrical parameters from the solar system. These values are displayed in real-time.
+
 ### Water Flow Monitoring
-A flow sensor measures the water flow through the system. Every pulse from the sensor corresponds to a certain volume of water. The total water usage is calculated and displayed in liters on the LCD.
+The flow sensor tracks the water flow rate in liters per minute. It counts pulses from the water flow sensor and uses them to calculate and display total water usage.
 
 ### LCD Display
-The LCD displays all sensor data including:
-- Temperature in Celsius
-- Humidity in percentage
-- Voltage in Volts
-- Current in Amps
-- Total water usage in liters
-- Rain detection status ("R" symbol)
+The LCD displays the following information:
+- **Temperature** (in °C)
+- **Humidity** (in %)
+- **Voltage** (in V)
+- **Current** (in A)
+- **Total Water Usage** (in liters)
+- **Rain Detection** (if rain is detected, "R" is displayed)
 
-### Interrupts and Real-Time Data
-The water flow sensor uses an interrupt to count pulses, ensuring precise water flow measurements without delay in data collection.
+### Real-Time Interrupt Handling
+The flow sensor uses interrupts to count pulses, allowing the system to track water flow accurately without missing any data.
 
 ## Code Overview
 
-### Main Components
+### Key Functions
 
-1. **Solar Tracking**:
-   - Adjusts the servo motor based on the difference in LDR values to align the solar panel.
-   
-2. **Environmental Sensors**:
-   - Reads and processes data from the DHT11, rain sensor, voltage sensor, and ACS712 current sensor.
-   
-3. **Water Flow Measurement**:
-   - Tracks pulses from the flow sensor, converts it to flow rate (liters per minute), and updates total water consumption.
-   
-4. **LCD Display**:
-   - Displays sensor values on a 16x2 LCD screen, updating every second.
+- `handleSolarTracking()`: Adjusts the solar panel's angle based on LDR readings.
+- `getTemperature()` and `getHumidity()`: Read temperature and humidity values from the DHT11 sensor.
+- `isRainDetected()`: Determines if rain is present based on the rain sensor’s output.
+- `readVoltage()` and `readCurrent()`: Convert analog sensor values to voltage and current readings.
+- `calculateFlowRate()`: Computes the water flow rate in liters per minute from sensor pulses.
+- `updateWaterUsage()`: Logs the cumulative water usage.
+- `displayData()`: Displays all relevant sensor data on the LCD.
 
-### Core Functions
-
-- `handleSolarTracking()`: Controls the solar panel alignment based on LDR values.
-- `getTemperature()` and `getHumidity()`: Read values from the DHT11 sensor.
-- `isRainDetected()`: Checks if rain is detected by the rain sensor.
-- `readVoltage()` and `readCurrent()`: Convert raw analog readings to actual voltage and current values.
-- `calculateFlowRate()`: Computes the water flow rate in liters per minute based on pulse counts.
-- `updateWaterUsage()`: Updates the total water usage in liters.
-- `displayData()`: Displays real-time sensor data on the LCD.
-
-## Example Output
+## Example LCD Output
 
 ```
-LCD Display:
-
-T: 25.0C  H: 55.0%
-V: 12.5V  I: 0.25A
-W: 10.5L   R
+T: 25.0C  H: 60.0%
+V: 12.5V  I: 0.30A
+W: 8.4L   R
 ```
 
-- **T**: Temperature in Celsius.
-- **H**: Humidity in percentage.
-- **V**: Voltage in Volts.
-- **I**: Current in Amps.
-- **W**: Water usage in liters.
-- **R**: Rain detected.
-
-## Future Improvements
-
-- **Data Logging**: Add functionality to log data to an SD card or send it to a remote server for historical analysis.
-- **Mobile App Integration**: Implement Bluetooth or Wi-Fi connectivity to allow remote monitoring via a smartphone app.
-- **Power Optimization**: Integrate sleep modes and power-saving techniques for better energy efficiency.
-
-## License
-
-This project is open-source and available under the [MIT License](LICENSE).
-
+- **T**: Temperature in Celsius
+- **H**: Humidity in percentage
+- **V**: Voltage in Volts
+- **I**: Current in Amps
+- **W**: Water usage in liters
+- **R**: Indicates rain is detected
 
