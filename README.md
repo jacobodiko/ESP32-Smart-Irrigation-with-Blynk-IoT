@@ -44,7 +44,35 @@ This project is a comprehensive **solar tracking**, **environmental monitoring**
 ## Software Requirements
 
 - **Arduino IDE** with ESP32 core
+- **ESP32Servo Library** (for servo motor control)
+- **DHT Library** (for temperature and humidity readings)
+- **Wire Library** (for I2C communication with the LCD)
 
+## Installation and Setup
+
+1. **Install Arduino IDE**: If not already installed, download and set up the Arduino IDE from [here](https://www.arduino.cc/en/software).
+   
+2. **Configure ESP32 in Arduino IDE**:
+   - Go to **File > Preferences**.
+   - Add the following URL in the “Additional Boards Manager URLs” field:
+     ```
+     https://dl.espressif.com/dl/package_esp32_index.json
+     ```
+   - Go to **Tools > Board > Boards Manager**, search for "ESP32" and install the **ESP32 by Espressif Systems** package.
+   
+3. **Install Required Libraries**:
+   - Navigate to **Sketch > Include Library > Manage Libraries** and install:
+     - **ESP32Servo**
+     - **DHT Sensor Library**
+     - **LiquidCrystal_I2C**
+
+4. **Wiring**:
+   - Connect sensors, the servo motor, and the LCD display to the ESP32 as outlined in the pin configuration table.
+
+5. **Upload the Code**:
+   - Open the `main.ino` file in the Arduino IDE.
+   - Select the correct ESP32 board under **Tools > Board**.
+   - Upload the code by clicking the **Upload** button.
 
 ## How It Works
 
