@@ -1,8 +1,27 @@
+// Blynk Authentication Token
+#define BLYNK_TEMPLATE_ID "TMPL2SlaLwnEY"
+#define BLYNK_TEMPLATE_NAME "Smart Irrigation"
+#define BLYNK_AUTH_TOKEN "Y0bq9MgoEVqwLapcwo26t4PaidwhJbHy"
+
+// Blynk Virtual Pins for Widgets
+#define BLYNK_VPIN_TEMP V0
+#define BLYNK_VPIN_HUMIDITY V1
+#define BLYNK_VPIN_VOLTAGE V2
+#define BLYNK_VPIN_CURRENT V3
+#define BLYNK_VPIN_WATER_USAGE V4
+
+bool isBlynkConnected = false;     // Track Blynk connection status
+
+const char *ssid = "slntgns";      // Replace with your Wi-Fi SSID
+const char *pass = "123456789";    // Replace with your Wi-Fi password
+
 // Libraries
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 #include <ESP32Servo.h>
 #include <DHT.h>
+#include <WiFi.h>
+#include <BlynkSimpleEsp32.h>
 
 // Pin Configurations
 #define DHT_PIN 4           // DHT11 data pin
@@ -12,12 +31,13 @@
 #define LCD_SDA_PIN 21      // LCD SDA
 #define LCD_SCL_PIN 22      // LCD SCL
 #define FLOW_SENSOR_PIN 23  // Water flow sensor
-#define RAIN_SENSOR_PIN 19  // Rain sensor digital output
-#define VOLTAGE_PIN 33      // Voltage sensor
-#define CURRENT_PIN 32      // ACS712 current sensor
+#define RAIN_SENSOR_DIGITAL_PIN 19  // Rain sensor digital output pin
+#define RAIN_SENSOR_ANALOG_PIN 18   // Rain sensor analog output pin
+#define VOLTAGE_PIN 33      // Voltage sensor (Solar Panel)
+#define CURRENT_PIN 32      // ACS712 current sensor (Solar Panel)
 
 // Object Definitions
-LiquidCrystal_I2C lcd(0x27, 16, 2);  // I2C LCD address 0x27F
+LiquidCrystal_I2C lcd(0x27, 16, 2);  // I2C LCD address 0x27
 DHT dht(DHT_PIN, DHT11);             // DHT11 sensor
 Servo solarServo;                    // Servo motor for solar tracking
 
@@ -33,6 +53,8 @@ float totalWaterUsed = 0.0;       // Total water usage in liters
 // Timing
 unsigned long previousMillis = 0;
 const unsigned long displayInterval = 1000;  // LCD refresh interval (1 second)
+unsigned long lastBlynkUpdate = 0;
+const unsigned long blynkUpdateInterval = 2000; // Blynk update interval (2 seconds)
 
 // Function to Count Pulses for Flow Sensor
 void IRAM_ATTR countFlowPulse() {
@@ -42,7 +64,6 @@ void IRAM_ATTR countFlowPulse() {
 void setup() {
   // Initialize Serial Monitor
   Serial.begin(115200);
-  while (!Serial);
 
   // Initialize LCD
   Wire.begin(LCD_SDA_PIN, LCD_SCL_PIN);  // Initialize I2C on ESP32 pins
@@ -65,14 +86,33 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(FLOW_SENSOR_PIN), countFlowPulse, FALLING);
 
   // Initialize Rain Sensor
-  pinMode(RAIN_SENSOR_PIN, INPUT);
+  pinMode(RAIN_SENSOR_DIGITAL_PIN, INPUT);  // Digital pin for detecting rain (high or low)
+  pinMode(RAIN_SENSOR_ANALOG_PIN, INPUT);   // Analog pin for measuring rain intensity
 
-  // Initialize Voltage and Current Sensors
+  // Initialize Voltage and Current Sensors (Solar Panel)
   pinMode(VOLTAGE_PIN, INPUT);
   pinMode(CURRENT_PIN, INPUT);
+
+  // Initialize Wi-Fi and Blynk
+  connectToWiFi();
+  Blynk.config(BLYNK_AUTH_TOKEN);  // Configure Blynk with the auth token
 }
 
 void loop() {
+  // Maintain Wi-Fi connection
+  maintainWiFiConnection();
+
+  // Maintain Blynk connection
+  if (WiFi.status() == WL_CONNECTED) {
+    if (!isBlynkConnected) {
+      isBlynkConnected = Blynk.connect();  // Attempt to connect to Blynk
+    } else {
+      Blynk.run();  // Process Blynk tasks
+    }
+  } else {
+    isBlynkConnected = false; // Mark Blynk as disconnected
+  }
+
   // Handle Solar Tracking
   handleSolarTracking();
 
@@ -88,7 +128,15 @@ void loop() {
   // Display Data on LCD
   displayData(temperature, humidity, voltage, current, flow, rainDetected);
 
-  // Delay to Prevent Overloading the Loop
+  // Send Data to Blynk at intervals
+  if (millis() - lastBlynkUpdate >= blynkUpdateInterval) {
+    if (isBlynkConnected) {
+      sendDataToBlynk(temperature, humidity, voltage, current, flow);
+    }
+    lastBlynkUpdate = millis();
+  }
+
+  // Delay to prevent overloading the loop
   delay(100);
 }
 
@@ -121,7 +169,7 @@ float getTemperature() {
     }
     delay(500);  // Wait before retrying
   }
-  Serial.println("..T");
+  Serial.println("Temperature Read Error");
   return -1;  // Error value
 }
 
@@ -134,33 +182,45 @@ float getHumidity() {
     }
     delay(500);
   }
-  Serial.println("..H");
+  Serial.println("Humidity Read Error");
   return -1;  // Error value
 }
 
-// Check for rain based on rain sensor readings
+// Check for rain based on rain sensor readings using two pins (digital and analog)
 bool isRainDetected() {
-  int rainValue = analogRead(RAIN_SENSOR_PIN);
-  return rainValue < 500;  // Assuming lower value means rain
+  int rainDigitalValue = digitalRead(RAIN_SENSOR_DIGITAL_PIN);  // Check digital pin (high/low)
+  int rainAnalogValue = analogRead(RAIN_SENSOR_ANALOG_PIN);     // Check analog pin (rain intensity)
+
+  // Logic: If digital pin is LOW (rain detected), and analog value is below a threshold, return true
+  if (rainDigitalValue == LOW && rainAnalogValue < 500) {
+    return true;  // Rain is detected
+  }
+  return false;  // No rain detected
 }
 
-// Read Voltage from voltage sensor with smoothing (averaging 10 readings)
+// Read Voltage from solar panel with smoothing (averaging 10 readings)
 float readVoltage() {
   float voltageSum = 0;
+  float voltageConversionFactor = (3.3 / 4095.0) * 11.0;  // Voltage divider factor for scaling
+
   for (int i = 0; i < 10; i++) {
     int rawValue = analogRead(VOLTAGE_PIN);
-    voltageSum += (rawValue / 4095.0) * 3.3 * 5.0;
+    voltageSum += rawValue * voltageConversionFactor;  // Convert to actual voltage
     delay(10);
   }
   return voltageSum / 10.0;  // Return averaged value
 }
 
-// Read Current from ACS712 sensor with smoothing (averaging 10 readings)
+// Read Current from ACS712 sensor (solar panel) with smoothing (averaging 10 readings)
 float readCurrent() {
   float currentSum = 0;
+  float currentOffset = 2.5;  // Offset for ACS712 (middle point of sensor output)
+  float sensitivity = 0.185;  // ACS712 sensitivity (185mV/A for 5A version)
+
   for (int i = 0; i < 10; i++) {
     int rawValue = analogRead(CURRENT_PIN);
-    currentSum += ((rawValue / 4095.0) * 3.3 - 2.5) / 0.185;  // ACS712 5A module
+    float voltage = (rawValue / 4095.0) * 3.3;  // Convert raw ADC value to voltage
+    currentSum += (voltage - currentOffset) / sensitivity;  // Calculate current
     delay(10);
   }
   return currentSum / 10.0;  // Return averaged value
@@ -239,5 +299,46 @@ void displayData(float temperature, float humidity, float voltage, float current
       lcd.setCursor(15, 1);
       lcd.print("R");
     }
+  }
+}
+
+// Send data to Blynk Virtual Pins
+void sendDataToBlynk(float temperature, float humidity, float voltage, float current, float flow) {
+  Blynk.virtualWrite(BLYNK_VPIN_TEMP, temperature);
+  Blynk.virtualWrite(BLYNK_VPIN_HUMIDITY, humidity);
+  Blynk.virtualWrite(BLYNK_VPIN_VOLTAGE, voltage);
+  Blynk.virtualWrite(BLYNK_VPIN_CURRENT, current);
+  Blynk.virtualWrite(BLYNK_VPIN_WATER_USAGE, totalWaterUsed);
+}
+
+// Ensure Wi-Fi connection
+void connectToWiFi() {
+  lcd.setCursor(0, 0);
+  lcd.print("Connecting to WiFi...");
+  WiFi.begin(ssid, pass);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    lcd.print(".");
+  }
+  lcd.clear();
+  lcd.print("WiFi Connected!");
+  delay(2000);
+  lcd.clear();
+}
+
+// Maintain Wi-Fi connection
+void maintainWiFiConnection() {
+  if (WiFi.status() != WL_CONNECTED) {
+    lcd.setCursor(0, 0);
+    lcd.print("Reconnecting WiFi...");
+    WiFi.begin(ssid, pass);
+    while (WiFi.status() != WL_CONNECTED) {
+      delay(500);
+      lcd.print(".");
+    }
+    lcd.clear();
+    lcd.print("WiFi Connected!");
+    delay(2000);
+    lcd.clear();
   }
 }
