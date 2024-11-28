@@ -101,3 +101,12 @@ W: 8.4L   R
 - **W**: Water usage in liters
 - **R**: Indicates rain is detected
 
+## Blynk Integration
+
+The system uses Blynk to send real-time data to the cloud, allowing you to remotely monitor key metrics from your smartphone or web dashboard. The system sends the following data to Blynk:
+
+- **Temperature** (Blynk Virtual Pin V0)
+- **Humidity** (Blynk Virtual Pin V1)
+- **Voltage** (Blynk Virtual Pin V2)
+- **Current** (Blynk Virtual Pin V3)
+- **Water Usage** (Blynk Virtual Pin V4)
