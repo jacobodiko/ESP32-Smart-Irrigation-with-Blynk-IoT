@@ -3,8 +3,10 @@
 This project is a comprehensive **solar tracking**, **environmental monitoring**, and **irrigation management system** built using an **ESP32 microcontroller**. It integrates various sensors to monitor key environmental parameters such as temperature, humidity, rain, water flow, voltage, and current. The system also automatically optimizes solar panel alignment using **Light Dependent Resistors (LDRs)** and a **servo motor**, ensuring efficient energy capture. Real-time data is displayed on a **16x2 LCD screen**, providing critical insights for solar panel optimization and resource management.
 
 ## Features
-
+-** Wi-Fi Connectivity: Establishes a connection to a Wi-Fi network for internet access.
+-** Blynk Integration: Sends sensor data to a Blynk dashboard, allowing remote access to irrigation system metrics.*
 - **Solar Tracking**: Dynamically adjusts the solar panel’s position using two LDRs and a servo motor to maximize sunlight exposure.
+- 
 - **Temperature and Humidity Monitoring**: Measures ambient temperature and humidity levels using a DHT11 sensor.
 - **Rain Detection**: Detects rainfall using a rain sensor and adjusts system behavior (e.g., irrigation) accordingly.
 - **Water Flow Monitoring**: Tracks water usage in real-time with a water flow sensor, allowing for precise water management.
